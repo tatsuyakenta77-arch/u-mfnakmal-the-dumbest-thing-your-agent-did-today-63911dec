@@ -50,8 +50,14 @@ mkdirSync(outDir, { recursive: true });
 writeFileSync(dst, line, "utf8");
 
 // Read it back and verify the file holds exactly the line, byte for
-// byte, so a partial or corrupted write can never reach the judge.
-if (readFileSync(dst, "utf8") !== line) {
+// byte, so a partial or corrupted write can never reach the judge —
+// and that its byte length matches the line, so no stray newline or
+// encoding surprise can slip past the character gate.
+const written = readFileSync(dst, "utf8");
+if (written !== line) {
   throw new Error("entry.txt does not hold exactly the entry line");
+}
+if (Buffer.byteLength(written, "utf8") !== line.length) {
+  throw new Error("entry.txt byte length does not match the entry line");
 }
 console.log(line);
